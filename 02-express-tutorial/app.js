@@ -1,24 +1,32 @@
 const express = require('express')
 const app = express();
+const logger = require('./logger')
+const authorize = require('./authorize')
 
 // req => middleware => res
+app.use([logger,authorize])
+//app.use('/api',logger)
+// api/product/ items
+// wil work for any path that comes after api
 
-function logger(req,res,next) {
-    const method = req.method; // express  will pass it in itself
-    const url = req.url;
-    const time = new Date().getFullYear();
-    console.log(method,url,time)
-    next() // pass it onto the next middleware
-    //res.send('testing')// will terminate cycle
-}
 
-app.get('/', logger , (req,res) => {
+app.get('/' , (req,res) => {
     res.send('Home')
 })
-app.get('/about',logger,(req,res) => {
+app.get('/about',(req,res) => {
     res.send('About')
 })
 
-app.listen(3000, () => {
-    console.log('server is listening on port 3000')
+app.get('/api/products' ,  (req,res) => {
+    res.send('products')
+})
+
+app.get('/api/items', (req,res) => {
+    console.log(req.user)
+    //can now find out the user for the req object from authorize middleware
+    res.send('Items')
+})
+
+app.listen(3000, () => { 
+    console.log('server is listening on port 3000') 
 })
