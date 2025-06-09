@@ -1,32 +1,44 @@
 const express = require('express')
 const app = express();
-const logger = require('./logger')
-const authorize = require('./authorize')
+let {people} = require('./data')
 
-// req => middleware => res
-app.use([logger,authorize])
-//app.use('/api',logger)
-// api/product/ items
-// wil work for any path that comes after api
+//static assest
+app.use(express.static('./methods-public'))
+//parse form data
+app.use(express.urlencoded({ extended: false }));
+//parse json
+app.use(express.json())
 
-
-app.get('/' , (req,res) => {
-    res.send('Home')
-})
-app.get('/about',(req,res) => {
-    res.send('About')
+app.get('/api/people', (req,res) => {
+    res.status(200).json({success: true, data:people})
 })
 
-app.get('/api/products' ,  (req,res) => {
-    res.send('products')
+app.post('/api/people', (req,res) => { 
+    const {name} = req.body
+    if(!name) {
+        return res.status(400).json({success:false , msg:'please provide name value'})
+    }
+    res.status(201).json({success:true,person:name })
 })
 
-app.get('/api/items', (req,res) => {
-    console.log(req.user)
-    //can now find out the user for the req object from authorize middleware
-    res.send('Items')
+app.post('/api/postman/people', (req,res) => {
+    const {name} = req.body
+    if (!name){
+        return res.status(400).json({ success:false , msg: "PROVIDE NAME"})
+    }
+    res.status(201).send({success:true, data:[...people,name]})
 })
 
-app.listen(3000, () => { 
-    console.log('server is listening on port 3000') 
+app.post('/login', (req,res) => {
+    const {name} = req.body;
+    if (name){
+        return res.status(200).send(`Welcome ${name}`)
+    }
+    res.status(401).send('please provide credidentials')
+})
+
+
+
+app.listen(3000, () => {
+    console.log('server is listening to port 3000')
 })
